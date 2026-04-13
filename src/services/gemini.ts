@@ -84,7 +84,12 @@ export async function generateBusinessIdeas(location: string, investmentRange: s
 export async function generateFeasibilityReport(idea: string, location: string) {
   const ai = getAI();
   const model = "gemini-flash-latest";
-  const prompt = `Generate a highly detailed business feasibility and estimation report for "${idea}" in "${location}".`;
+  const prompt = `Generate a highly detailed business feasibility and estimation report for "${idea}" in "${location}".
+  
+  CRITICAL REQUIREMENT:
+  - All currency values MUST be in Indian Rupees (INR).
+  - Use the "₹" symbol for all price values.
+  - Do NOT use dollars ($) or any other currency.`;
 
   try {
     const response = await ai.models.generateContent({

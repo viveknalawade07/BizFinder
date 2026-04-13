@@ -65,9 +65,9 @@ export default function Estimator({ location }: EstimatorProps) {
       body: report.initialInvestment.items.map((item: any) => [
         item.item,
         item.description,
-        item.cost.replace('₹', 'INR ')
+        item.cost.replace(/[₹$]/g, 'INR ')
       ]),
-      foot: [['Total Initial Investment', '', report.initialInvestment.total.replace('₹', 'INR ')]],
+      foot: [['Total Initial Investment', '', report.initialInvestment.total.replace(/[₹$]/g, 'INR ')]],
       theme: 'striped',
       headStyles: { fillColor: [245, 158, 11] },
       margin: { left: margin },
@@ -86,9 +86,9 @@ export default function Estimator({ location }: EstimatorProps) {
       body: report.operatingCosts.items.map((item: any) => [
         item.expense,
         item.description,
-        item.cost.replace('₹', 'INR ')
+        item.cost.replace(/[₹$]/g, 'INR ')
       ]),
-      foot: [['Total Monthly Operating Cost', '', report.operatingCosts.total.replace('₹', 'INR ')]],
+      foot: [['Total Monthly Operating Cost', '', report.operatingCosts.total.replace(/[₹$]/g, 'INR ')]],
       theme: 'striped',
       headStyles: { fillColor: [245, 158, 11] },
       margin: { left: margin },
@@ -97,21 +97,21 @@ export default function Estimator({ location }: EstimatorProps) {
 
     // 3. Revenue Projections
     addText("3. Revenue Projections (First Year)", 14, true);
-    addText(`Average Price per Unit: ${report.revenueProjections.pricePerUnit.replace('₹', 'INR ')}`, 11);
+    addText(`Average Price per Unit: ${report.revenueProjections.pricePerUnit.replace(/[₹$]/g, 'INR ')}`, 11);
     addText(`Average Sales per Day: ${report.revenueProjections.salesPerDay}`, 11);
     
     addText("Average Monthly Revenue:", 11, true);
-    addText(`1st Quarter: ${report.revenueProjections.quarterlyRevenue.q1.replace('₹', 'INR ')}`, 10);
-    addText(`2nd Quarter: ${report.revenueProjections.quarterlyRevenue.q2.replace('₹', 'INR ')}`, 10);
-    addText(`3rd-4th Quarter: ${report.revenueProjections.quarterlyRevenue.q3_q4.replace('₹', 'INR ')}`, 10);
+    addText(`1st Quarter: ${report.revenueProjections.quarterlyRevenue.q1.replace(/[₹$]/g, 'INR ')}`, 10);
+    addText(`2nd Quarter: ${report.revenueProjections.quarterlyRevenue.q2.replace(/[₹$]/g, 'INR ')}`, 10);
+    addText(`3rd-4th Quarter: ${report.revenueProjections.quarterlyRevenue.q3_q4.replace(/[₹$]/g, 'INR ')}`, 10);
     
-    addText(`Average Annual Revenue: ${report.revenueProjections.annualRevenue.replace('₹', 'INR ')}`, 11, true);
+    addText(`Average Annual Revenue: ${report.revenueProjections.annualRevenue.replace(/[₹$]/g, 'INR ')}`, 11, true);
     addText(report.revenueProjections.addOns, 10, false, [100, 100, 100]);
     yPos += 5;
 
     // 4. Break-even Analysis
     addText("4. Break-even Analysis", 14, true);
-    addText(`Monthly Net Profit: ${report.breakEven.monthlyProfit.replace('₹', 'INR ')}`, 11);
+    addText(`Monthly Net Profit: ${report.breakEven.monthlyProfit.replace(/[₹$]/g, 'INR ')}`, 11);
     addText(`Break-even Point: ${report.breakEven.breakEvenPoint}`, 11);
     addText(`Realistic Timeline: ${report.breakEven.realisticTimeline}`, 11);
     yPos += 5;
@@ -166,10 +166,10 @@ export default function Estimator({ location }: EstimatorProps) {
 
     // Summary
     addText("Summary", 16, true, [245, 158, 11]);
-    addText(`Initial Investment: ${report.summary.investment.replace('₹', 'INR ')}`, 11);
-    addText(`Monthly Cost: ${report.summary.monthlyCost.replace('₹', 'INR ')}`, 11);
-    addText(`Monthly Revenue: ${report.summary.revenue.replace('₹', 'INR ')}`, 11);
-    addText(`Monthly Profit: ${report.summary.profit.replace('₹', 'INR ')}`, 11);
+    addText(`Initial Investment: ${report.summary.investment.replace(/[₹$]/g, 'INR ')}`, 11);
+    addText(`Monthly Cost: ${report.summary.monthlyCost.replace(/[₹$]/g, 'INR ')}`, 11);
+    addText(`Monthly Revenue: ${report.summary.revenue.replace(/[₹$]/g, 'INR ')}`, 11);
+    addText(`Monthly Profit: ${report.summary.profit.replace(/[₹$]/g, 'INR ')}`, 11);
     addText(`Break-even: ${report.summary.breakEven}`, 11);
     yPos += 10;
 
