@@ -1,0 +1,5 @@
+{
+  "name": "BizFinder",
+  "description": "AI-powered business intelligence for local entrepreneurs. Discover market gaps, startup ideas, and feasibility reports.",
+  "requestFramePermissions": ["geolocation"]
+}
