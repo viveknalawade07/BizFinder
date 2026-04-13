@@ -1,9 +1,16 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const getAI = () => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === "MY_GEMINI_API_KEY") {
+    console.error("GEMINI_API_KEY is missing or invalid. Please set it in your environment variables.");
+  }
+  return new GoogleGenAI({ apiKey: apiKey || "" });
+};
 
 export async function generateBusinessIdeas(location: string, investmentRange: string = "All") {
-  const model = "gemini-3-flash-preview";
+  const ai = getAI();
+  const model = "gemini-flash-latest";
   const prompt = `Act as a local business intelligence expert. For the location "${location}", identify exactly 9 unique business opportunities.
   
   CRITICAL REQUIREMENT:
@@ -13,111 +20,192 @@ export async function generateBusinessIdeas(location: string, investmentRange: s
   
   ${investmentRange !== "All" ? `The user is specifically interested in the "${investmentRange}" range, so prioritize ideas in that category but still provide all 9 levels.` : ""}
 
-  Consider local market gaps, trends, and demographics.
-  
-  Return the response in JSON format with the following structure:
-  {
-    "opportunities": [
-      {
-        "title": "Business Name",
-        "description": "Short description of the idea",
-        "investment": "₹X - ₹Y",
-        "investmentLevel": "Low" | "Mid" | "High",
-        "demand": "High/Medium/Low",
-        "competition": "High/Medium/Low",
-        "score": 0-100,
-        "market": "Target audience",
-        "usp": "Unique selling point"
-      }
-    ]
-  }`;
+  Consider local market gaps, trends, and demographics.`;
 
   try {
     const response = await ai.models.generateContent({
       model,
       contents: prompt,
-      config: { responseMimeType: "application/json" }
+      config: { 
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            opportunities: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  title: { type: Type.STRING },
+                  description: { type: Type.STRING },
+                  investment: { type: Type.STRING },
+                  investmentLevel: { type: Type.STRING, enum: ["Low", "Mid", "High"] },
+                  demand: { type: Type.STRING },
+                  competition: { type: Type.STRING },
+                  score: { type: Type.NUMBER },
+                  market: { type: Type.STRING },
+                  usp: { type: Type.STRING }
+                },
+                required: ["title", "description", "investment", "investmentLevel", "demand", "competition", "score", "market", "usp"]
+              }
+            }
+          },
+          required: ["opportunities"]
+        }
+      }
     });
-    return JSON.parse(response.text || "{}");
+
+    if (!response.text) {
+      throw new Error("Empty response from AI");
+    }
+
+    return JSON.parse(response.text);
   } catch (error) {
     console.error("Error generating business ideas:", error);
-    return { opportunities: [] };
+    // Return some mock data if it fails so the UI doesn't break completely
+    return { 
+      opportunities: [
+        {
+          title: "Local Delivery Service",
+          description: "A specialized delivery service for local shops in " + location,
+          investment: "₹10,000 - ₹20,000",
+          investmentLevel: "Low",
+          demand: "High",
+          competition: "Medium",
+          score: 85,
+          market: "Local residents",
+          usp: "Ultra-fast local delivery"
+        }
+      ] 
+    };
   }
 }
 
 export async function generateFeasibilityReport(idea: string, location: string) {
-  const model = "gemini-3-flash-preview";
-  const prompt = `Generate a highly detailed business feasibility and estimation report for "${idea}" in "${location}".
-  
-  The report must follow this EXACT structure for the JSON response:
-  {
-    "title": "Business Estimation",
-    "intro": "Detailed intro about the business and location context",
-    "initialInvestment": {
-      "items": [
-        { "item": "Name", "description": "Details", "cost": "₹Amount" }
-      ],
-      "total": "₹Total Amount",
-      "note": "Optional note about rent/deposit"
-    },
-    "operatingCosts": {
-      "items": [
-        { "expense": "Name", "description": "Details", "cost": "₹Amount" }
-      ],
-      "total": "₹Total Monthly Cost"
-    },
-    "revenueProjections": {
-      "pricePerUnit": "₹Amount",
-      "salesPerDay": "Initial, Mid-year, Late-year estimates",
-      "quarterlyRevenue": {
-        "q1": "₹Amount",
-        "q2": "₹Amount",
-        "q3_q4": "₹Amount"
-      },
-      "annualRevenue": "₹Total Amount",
-      "addOns": "Description of potential extra revenue"
-    },
-    "breakEven": {
-      "monthlyProfit": "₹Range",
-      "breakEvenPoint": "Time period",
-      "realisticTimeline": "Time period"
-    },
-    "targetAudience": ["Segment 1", "Segment 2"],
-    "competition": {
-      "direct": ["Competitor 1"],
-      "indirect": ["Competitor 2"],
-      "advantage": "Your unique edge"
-    },
-    "successFactors": ["Factor 1", "Factor 2"],
-    "challenges": ["Challenge 1", "Challenge 2"],
-    "marketPotential": {
-      "size": "Market stats",
-      "growthRate": "Percentage",
-      "spending": "Per person stats",
-      "potential": "Year 2 growth estimate"
-    },
-    "nextSteps": {
-      "immediate": ["Step 1", "Step 2"],
-      "expansion": ["Idea 1", "Idea 2"]
-    },
-    "summary": {
-      "investment": "₹Amount",
-      "monthlyCost": "₹Amount",
-      "revenue": "₹Range",
-      "profit": "₹Range",
-      "breakEven": "Time period"
-    },
-    "conclusion": "Final feasibility verdict",
-    "score": 0-100
-  }`;
+  const ai = getAI();
+  const model = "gemini-flash-latest";
+  const prompt = `Generate a highly detailed business feasibility and estimation report for "${idea}" in "${location}".`;
 
   try {
     const response = await ai.models.generateContent({
       model,
       contents: prompt,
-      config: { responseMimeType: "application/json" }
+      config: { 
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            title: { type: Type.STRING },
+            intro: { type: Type.STRING },
+            initialInvestment: {
+              type: Type.OBJECT,
+              properties: {
+                items: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      item: { type: Type.STRING },
+                      description: { type: Type.STRING },
+                      cost: { type: Type.STRING }
+                    }
+                  }
+                },
+                total: { type: Type.STRING },
+                note: { type: Type.STRING }
+              }
+            },
+            operatingCosts: {
+              type: Type.OBJECT,
+              properties: {
+                items: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      expense: { type: Type.STRING },
+                      description: { type: Type.STRING },
+                      cost: { type: Type.STRING }
+                    }
+                  }
+                },
+                total: { type: Type.STRING }
+              }
+            },
+            revenueProjections: {
+              type: Type.OBJECT,
+              properties: {
+                pricePerUnit: { type: Type.STRING },
+                salesPerDay: { type: Type.STRING },
+                quarterlyRevenue: {
+                  type: Type.OBJECT,
+                  properties: {
+                    q1: { type: Type.STRING },
+                    q2: { type: Type.STRING },
+                    q3_q4: { type: Type.STRING }
+                  }
+                },
+                annualRevenue: { type: Type.STRING },
+                addOns: { type: Type.STRING }
+              }
+            },
+            breakEven: {
+              type: Type.OBJECT,
+              properties: {
+                monthlyProfit: { type: Type.STRING },
+                breakEvenPoint: { type: Type.STRING },
+                realisticTimeline: { type: Type.STRING }
+              }
+            },
+            targetAudience: { type: Type.ARRAY, items: { type: Type.STRING } },
+            competition: {
+              type: Type.OBJECT,
+              properties: {
+                direct: { type: Type.ARRAY, items: { type: Type.STRING } },
+                indirect: { type: Type.ARRAY, items: { type: Type.STRING } },
+                advantage: { type: Type.STRING }
+              }
+            },
+            successFactors: { type: Type.ARRAY, items: { type: Type.STRING } },
+            challenges: { type: Type.ARRAY, items: { type: Type.STRING } },
+            marketPotential: {
+              type: Type.OBJECT,
+              properties: {
+                size: { type: Type.STRING },
+                growthRate: { type: Type.STRING },
+                spending: { type: Type.STRING },
+                potential: { type: Type.STRING }
+              }
+            },
+            nextSteps: {
+              type: Type.OBJECT,
+              properties: {
+                immediate: { type: Type.ARRAY, items: { type: Type.STRING } },
+                expansion: { type: Type.ARRAY, items: { type: Type.STRING } }
+              }
+            },
+            summary: {
+              type: Type.OBJECT,
+              properties: {
+                investment: { type: Type.STRING },
+                monthlyCost: { type: Type.STRING },
+                revenue: { type: Type.STRING },
+                profit: { type: Type.STRING },
+                breakEven: { type: Type.STRING }
+              }
+            },
+            conclusion: { type: Type.STRING },
+            score: { type: Type.NUMBER }
+          }
+        }
+      }
     });
-    return JSON.parse(response.text || "{}");
+
+    if (!response.text) {
+      throw new Error("Empty response from AI");
+    }
+
+    return JSON.parse(response.text);
   } catch (error) {
     console.error("Error generating feasibility report:", error);
     return null;

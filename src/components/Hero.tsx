@@ -118,7 +118,13 @@ export default function Hero({ onSearch }: HeroProps) {
             </button>
 
             <button
-              onClick={() => onSearch(location)}
+              onClick={() => {
+                if (!location.trim()) {
+                  alert("Please enter or detect a location first.");
+                  return;
+                }
+                onSearch(location);
+              }}
               className="px-8 py-3 rounded-xl bg-primary hover:bg-primary-hover text-background font-bold transition-all shadow-lg shadow-primary/20 whitespace-nowrap"
             >
               Explore Opportunities

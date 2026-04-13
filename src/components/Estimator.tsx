@@ -4,7 +4,11 @@ import { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { generateFeasibilityReport } from "@/services/gemini";
 
-export default function Estimator() {
+interface EstimatorProps {
+  location?: string;
+}
+
+export default function Estimator({ location }: EstimatorProps) {
   const [idea, setIdea] = useState("");
   const [category, setCategory] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -14,7 +18,7 @@ export default function Estimator() {
   const handleGetEstimation = async () => {
     if (!idea) return;
     setIsGenerating(true);
-    const result = await generateFeasibilityReport(idea, "Your Area");
+    const result = await generateFeasibilityReport(idea, location || "Your Area");
     setReport(result);
     setIsGenerating(false);
   };

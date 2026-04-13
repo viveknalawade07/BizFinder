@@ -91,7 +91,7 @@ export default function App() {
           </div>
         )}
 
-        <Estimator />
+        <Estimator location={location} />
         <NameValidator />
         <Schemes />
       </main>
